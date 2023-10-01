@@ -1,35 +1,42 @@
 <?php
-class Nhanvien {
+class Nhanvien
+{
     private $conn;
     private $table_name = "staffs";
 
     public $id;
+    public $code;
     public $fullname;
     public $phone;
     public $email;
     public $introduce;
     public $start_date;
 
-    public function __construct($db) {
+    public function __construct($db)
+    {
         $this->conn = $db;
     }
 
-    public function read() {
+    public function read()
+    {
         $query = "SELECT * FROM " . $this->table_name;
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         return $stmt;
     }
 
-    public function create() {
+    public function create()
+    {
         $query = "INSERT INTO " . $this->table_name . " 
-                  SET fullname=:fullname, phone=:phone, email=:email, introduce=:introduce, start_date=:start_date";
+                  SET code=:code,fullname=:fullname, phone=:phone, email=:email, introduce=:introduce, start_date=:start_date";
         $stmt = $this->conn->prepare($query);
         $this->fullname = htmlspecialchars(strip_tags($this->fullname));
+        $this->code = htmlspecialchars(strip_tags($this->code));
         $this->phone = htmlspecialchars(strip_tags($this->phone));
         $this->email = htmlspecialchars(strip_tags($this->email));
         $this->introduce = htmlspecialchars(strip_tags($this->introduce));
         $this->start_date = htmlspecialchars(strip_tags($this->start_date));
+        $stmt->bindParam(":code", $this->code);
         $stmt->bindParam(":fullname", $this->fullname);
         $stmt->bindParam(":phone", $this->phone);
         $stmt->bindParam(":email", $this->email);
@@ -41,7 +48,8 @@ class Nhanvien {
         return false;
     }
 
-    public function update() {
+    public function update()
+    {
         $query = "UPDATE " . $this->table_name . " 
                   SET fullname=:fullname, phone=:phone, email=:email, introduce=:introduce, start_date=:start_date
                   WHERE id=:id";
@@ -73,6 +81,7 @@ class Nhanvien {
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
         $this->id = $row['id'];
+        $this->code = $row['code'];
         $this->fullname = $row['fullname'];
         $this->phone = $row['phone'];
         $this->email = $row['email'];
@@ -91,5 +100,13 @@ class Nhanvien {
         }
         return false;
     }
-
+    public function checkCodeUnique($code)
+    {
+        $query = "SELECT COUNT(*) as count FROM " . $this->table_name . " WHERE code like :code";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":code", $code);
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row['count'];
+    }
 }

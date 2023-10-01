@@ -115,6 +115,12 @@ $nhanvien->readOne();
         <form method="post">
             <table>
                 <tr>
+                    <td style="width: 20%;"> <label for="fullname">MSNV</label> </td>
+                    <td> 
+                       <?php echo $nhanvien->code; ?>
+                    </td>
+                </tr>
+                  <tr>
                     <td style="width: 20%;"> <label for="fullname">Họ và Tên</label> </td>
                     <td> <input type="text" name="fullname" value="<?php echo $nhanvien->fullname; ?>" required></td>
                 </tr>

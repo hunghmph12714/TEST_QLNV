@@ -25,18 +25,26 @@ if (isset($_POST['showAddForm'])) {
     $showAddForm = false;
 }
 // nếu người dùng thì ấn submit, không phải ấn submit btn thêm nhân viên thì gán tất cả dữ liệu vào clas Nhanvien và thêm mới
-if ($_POST && !$_POST['showAddForm']) {
-    $nhanvien->fullname = $_POST['fullname'];
-    $nhanvien->phone = $_POST['phone'];
-    $nhanvien->email = $_POST['email'];
-    $nhanvien->introduce = $_POST['introduce'];
-    $nhanvien->start_date = $_POST['start_date'];
-
-
-    if ($nhanvien->create()) {
-        header("Location: list.php");
+if ($_POST && empty($_POST['showAddForm'])) {
+    // check MSNV kHÔNG được trùng 
+    $check = $nhanvien->checkCodeUnique($_POST['code']);
+    if ($check) {
+        echo "Mã số nhân viên đã tồn tại";
+        return false;
     } else {
-        echo "Không thể thêm nhân viên.";
+        $nhanvien->code = $_POST['code'];
+        $nhanvien->fullname = $_POST['fullname'];
+        $nhanvien->phone = $_POST['phone'];
+        $nhanvien->email = $_POST['email'];
+        $nhanvien->introduce = $_POST['introduce'];
+        $nhanvien->start_date = $_POST['start_date'];
+
+
+        if ($nhanvien->create()) {
+            header("Location: list.php");
+        } else {
+            echo "Không thể thêm nhân viên.";
+        }
     }
 }
 
@@ -125,11 +133,13 @@ if ($_POST && !$_POST['showAddForm']) {
         </ul>
     </nav>
     <div class="content">
-        <h2>Danh sách Nhân viên</h2>
+
         <!-- Nút "Thêm Nhân viên" để hiển thị form thêm -->
-        <form method="post">
-            <input type="submit" name="showAddForm" value="Thêm Nhân viên">
-        </form>
+        <?php if (!$showAddForm) : ?>
+            <form method="post">
+                <input type="submit" name="showAddForm" value="Thêm Nhân viên">
+            </form>
+        <?php endif; ?>
 
         <!-- Kiểm tra và hiển thị form thêm nhân viên -->
         <?php if ($showAddForm) : ?>
@@ -138,6 +148,10 @@ if ($_POST && !$_POST['showAddForm']) {
                 <h2>Thêm Nhân viên</h2>
                 <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
                     <table class="table-form-create">
+                        <tr>
+                            <td style="width: 20%;"> <label for="fullname">MSNV</label> </td>
+                            <td> <input type="text" name="code" maxlength="20" value="<?php echo $nhanvien->code; ?>" required></td>
+                        </tr>
                         <tr>
                             <td style="width: 20%;"> <label for="fullname">Họ và Tên</label> </td>
                             <td> <input type="text" name="fullname" value="<?php echo $nhanvien->fullname; ?>" required></td>
@@ -178,10 +192,11 @@ if ($_POST && !$_POST['showAddForm']) {
                 </form>
             </div>
         <?php endif; ?>
+        <h2>Danh sách Nhân viên</h2>
         <table>
             <thead>
                 <tr>
-                    <th>ID</th>
+                    <th>MSNV</th>
                     <th>Tên NV</th>
                     <th>Điện thoại</th>
                     <th>Email</th>
@@ -191,9 +206,10 @@ if ($_POST && !$_POST['showAddForm']) {
                 </tr>
             </thead>
             <tbody>
+            
                 <?php while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) : ?>
                     <tr>
-                        <td><?php echo $row['id']; ?></td>
+                        <td><?php echo $row['code']; ?></td>
                         <td><?php echo $row['fullname']; ?></td>
                         <td><?php echo $row['phone']; ?></td>
                         <td><?php echo $row['email']; ?></td>
